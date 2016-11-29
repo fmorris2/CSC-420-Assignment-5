@@ -1,28 +1,26 @@
 package org;
-import java.awt.Color;
-import java.awt.event.ActionEvent;
-
 import javax.swing.DefaultListModel;
-import javax.swing.JButton;
-import javax.swing.JColorChooser;
 import javax.swing.JFrame;
 import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JSlider;
 import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
-import javax.swing.event.ChangeEvent;
 
 import org.flag.Flag;
+import org.flag.FlagLoader;
+
+import net.miginfocom.swing.MigLayout;
 
 public class MainFrame extends JFrame
 {
 	private static final long serialVersionUID = -3659990255393448369L;
 	
 	private JPanel contentPane;
-	private CircleCanvas circleCanvas;
-	private JSlider horizontalSlider, verticalSlider;
-	private JButton displayButton;
+	private FlagCanvas flagCanvas;
+	private JSlider leftSlider, rightSlider, topSlider, bottomSlider;
+	private JScrollPane scrollPane;
 	private JList<Flag> countryList;
 	private DefaultListModel<Flag> countryListModel;
 
@@ -31,63 +29,36 @@ public class MainFrame extends JFrame
 		setTitle("CSC-420 - Assignment 5");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 600, 500);
-		setResizable(false);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
-		contentPane.setLayout(null);
+		//Layout, column, row constraints
+		MigLayout layout = new MigLayout("", "[grow, fill][][]", "[][grow, fill][][]");
+		contentPane.setLayout(layout);
 		
-		verticalSlider = new JSlider();
-		verticalSlider.setPaintTicks(true);
-		verticalSlider.setOrientation(SwingConstants.VERTICAL);
-		verticalSlider.setBounds(10, 11, 31, 336);
-		verticalSlider.addChangeListener((ChangeEvent e) -> {verticalChange();});
-		contentPane.add(verticalSlider);
+		leftSlider = new JSlider();
+		rightSlider = new JSlider();
+		topSlider = new JSlider();
+		bottomSlider = new JSlider();
 		
-		horizontalSlider = new JSlider();
-		horizontalSlider.setBounds(41, 352, 533, 26);
-		horizontalSlider.addChangeListener((ChangeEvent e) -> {horizontalChange();});
-		contentPane.add(horizontalSlider);
+		flagCanvas = new FlagCanvas();
 		
-		circleCanvas = new CircleCanvas();
-		circleCanvas.setBounds(29, 11, 545, 348);
-		contentPane.add(circleCanvas);
+		scrollPane = new JScrollPane();
+		countryList = new JList<>();
+		countryListModel = new DefaultListModel<>();
+		countryList.setModel(countryListModel);
+		scrollPane.setViewportView(countryList);
+		new FlagLoader(this).execute();
 		
-		JButton colorButton = new JButton("Choose Color");
-		colorButton.addActionListener((ActionEvent e) -> {openColorPicker();});
-		colorButton.setBounds(139, 389, 141, 61);
-		contentPane.add(colorButton);
+		leftSlider.setOrientation(SwingConstants.VERTICAL);
+		rightSlider.setOrientation(SwingConstants.VERTICAL);
 		
-		displayButton = new JButton("Hide");
-		displayButton.addActionListener((ActionEvent e) -> {changeDisplay();});
-		displayButton.setBounds(330, 389, 141, 61);
-		contentPane.add(displayButton);
-		
-		horizontalChange();
-		verticalChange();
-	}
-	
-	private void horizontalChange()
-	{
-		circleCanvas.calculateX(horizontalSlider.getValue());
-		circleCanvas.repaint();
-	}
-	
-	private void verticalChange()
-	{
-		circleCanvas.calculateY(verticalSlider.getValue());
-		circleCanvas.repaint();
-	}
-	
-	private void openColorPicker()
-	{
-		circleCanvas.setColor(JColorChooser.showDialog(null, "Choose a Color", Color.WHITE));
-	}
-	
-	private void changeDisplay()
-	{
-		circleCanvas.changeDisplay();
-		displayButton.setText(circleCanvas.isDisplayed() ? "Hide" : "Show");	
+		contentPane.add(topSlider, "dock north, wrap");
+		contentPane.add(scrollPane, "dock south");
+		contentPane.add(bottomSlider, "dock south");
+		contentPane.add(leftSlider, "dock west");
+		contentPane.add(flagCanvas, "wmin 10");
+		contentPane.add(rightSlider, "dock east");
 	}
 	
 	public void addFlag(Flag f)
